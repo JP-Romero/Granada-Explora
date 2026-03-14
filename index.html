@@ -886,7 +886,13 @@
     const bannerMsg = document.getElementById('offline-msg');
     let onlineTimer;
 
+    let onlineDebounce;
+
     function showOfflineBanner() {
+        // Cancelar cualquier timer pendiente de "conexión restaurada"
+        clearTimeout(onlineTimer);
+        clearTimeout(onlineDebounce);
+
         banner.classList.remove('back-online');
         banner.querySelector('.dot').style.animation = 'blink 1.4s ease infinite';
         bannerMsg.textContent = 'Sin conexión — Mostrando contenido guardado';
@@ -895,13 +901,19 @@
     }
 
     function showOnlineBanner() {
-        banner.classList.add('back-online');
-        banner.querySelector('.dot').style.animation = 'none';
-        bannerMsg.textContent = '¡Conexión restaurada!';
-        banner.classList.add('visible');
-        document.body.classList.remove('offline-mode');
-        clearTimeout(onlineTimer);
-        onlineTimer = setTimeout(() => banner.classList.remove('visible'), 2800);
+        // Debounce: esperar 300ms antes de mostrar "conexión restaurada"
+        // Evita el evento 'online' espurio que Android dispara al desactivar la red
+        clearTimeout(onlineDebounce);
+        onlineDebounce = setTimeout(() => {
+            if (!navigator.onLine) return; // confirmar que sigue online
+            banner.classList.add('back-online');
+            banner.querySelector('.dot').style.animation = 'none';
+            bannerMsg.textContent = '¡Conexión restaurada!';
+            banner.classList.add('visible');
+            document.body.classList.remove('offline-mode');
+            clearTimeout(onlineTimer);
+            onlineTimer = setTimeout(() => banner.classList.remove('visible'), 2800);
+        }, 300);
     }
 
     window.addEventListener('offline', showOfflineBanner);
