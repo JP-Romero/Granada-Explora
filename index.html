@@ -256,10 +256,12 @@
         </div>
 
         <div class="flex gap-2 px-6 pt-4 pb-2 overflow-x-auto no-scrollbar">
-            <button onclick="setFilter('Todos')"      id="filter-Todos"      class="filter-pill active">Todos</button>
-            <button onclick="setFilter('Cultura')"    id="filter-Cultura"    class="filter-pill">Cultura</button>
-            <button onclick="setFilter('Naturaleza')" id="filter-Naturaleza" class="filter-pill">Naturaleza</button>
-            <button onclick="setFilter('Comida')"     id="filter-Comida"     class="filter-pill">Comida</button>
+            <button onclick="setFilter('Todos')"       id="filter-Todos"       class="filter-pill active">Todos</button>
+            <button onclick="setFilter('Cultura')"     id="filter-Cultura"     class="filter-pill">Cultura</button>
+            <button onclick="setFilter('Naturaleza')"  id="filter-Naturaleza"  class="filter-pill">Naturaleza</button>
+            <button onclick="setFilter('Comida')"      id="filter-Comida"      class="filter-pill">Comida</button>
+            <button onclick="setFilter('Hoteles')"     id="filter-Hoteles"     class="filter-pill">Hoteles</button>
+            <button onclick="setFilter('Actividades')" id="filter-Actividades" class="filter-pill">Actividades</button>
         </div>
 
         <main class="px-6 pt-2 pb-4 space-y-4">
@@ -295,6 +297,12 @@
             </div>
             <div class="flex items-center gap-2 text-[11px] font-medium text-gray-700">
                 <div class="w-2.5 h-2.5 rounded-full bg-[#D97706] shrink-0"></div> Comida
+            </div>
+            <div class="flex items-center gap-2 text-[11px] font-medium text-gray-700">
+                <div class="w-2.5 h-2.5 rounded-full bg-[#7C3AED] shrink-0"></div> Hoteles
+            </div>
+            <div class="flex items-center gap-2 text-[11px] font-medium text-gray-700">
+                <div class="w-2.5 h-2.5 rounded-full bg-[#0369A1] shrink-0"></div> Actividades
             </div>
         </div>
     </div>
@@ -394,7 +402,8 @@
                     <span id="modal-reviews" class="text-gray-400 text-xs"></span>
                 </div>
 
-                <p id="modal-desc" class="text-gray-500 text-sm leading-relaxed mb-7"></p>
+                <p id="modal-desc" class="text-gray-500 text-sm leading-relaxed mb-3"></p>
+                <p id="modal-price" class="text-amber-700 text-xs font-semibold mb-7"></p>
 
                 <div class="flex gap-3">
                     <button onclick="toggleFavoriteFromModal()" id="modal-fav-btn"
@@ -443,6 +452,7 @@
     ];
 
     const PLACES = [
+        // ── Originales ──────────────────────────────────────────────────────
         {
             id: 1,
             name: "Catedral de Granada",
@@ -453,7 +463,8 @@
             description: "La Catedral de Nuestra Señora de la Asunción es uno de los edificios más emblemáticos de Granada. Su arquitectura neoclásica y su color amarillo vibrante la hacen inconfundible en toda Centroamérica.",
             rating: 4.8,
             reviews: 150,
-            tag: "Museo"
+            tag: "Museo",
+            price: null
         },
         {
             id: 2,
@@ -465,7 +476,8 @@
             description: "Un archipiélago de más de 360 pequeñas islas formadas por una erupción del volcán Mombacho. Ideal para paseos en lancha y observación de aves tropicales.",
             rating: 4.9,
             reviews: 120,
-            tag: "Naturaleza"
+            tag: "Naturaleza",
+            price: null
         },
         {
             id: 3,
@@ -477,7 +489,8 @@
             description: "Famosa por su torre campanario que ofrece la mejor vista panorámica de la ciudad y el volcán Mombacho al fondo. Una parada obligatoria para los amantes de la historia.",
             rating: 4.7,
             reviews: 85,
-            tag: "Historia"
+            tag: "Historia",
+            price: null
         },
         {
             id: 4,
@@ -489,7 +502,187 @@
             description: "La arteria más animada de Granada: restaurantes al aire libre, música en vivo y la vida nocturna más auténtica de la ciudad colonial.",
             rating: 4.6,
             reviews: 210,
-            tag: "Gastronomía"
+            tag: "Gastronomía",
+            price: "💰 Económico – Moderado"
+        },
+
+        // ── Cultura / Historia ───────────────────────────────────────────────
+        {
+            id: 5,
+            name: "Convento San Francisco",
+            category: "Cultura",
+            location: "Calle El Arsenal",
+            coords: [11.9308, -85.9558],
+            image: "https://ik.imagekit.io/mnw1ere56/convento-san-francisco.jpg",
+            description: "Fundado en 1529, es uno de los conventos más antiguos de América Central. Alberga un museo con estatuas precolombinas de la Isla Zapatera y valiosas colecciones de arte colonial.",
+            rating: 4.8,
+            reviews: 230,
+            tag: "Historia",
+            price: null
+        },
+        {
+            id: 6,
+            name: "Fortaleza La Pólvora",
+            category: "Cultura",
+            location: "Calle Arsenal",
+            coords: [11.9275, -85.9612],
+            image: "https://ik.imagekit.io/mnw1ere56/fortaleza-la-polvora.jpg",
+            description: "Fuerte colonial construido en 1748 para proteger la pólvora de los piratas. Sus cinco torres ofrecen una de las mejores vistas panorámicas de la ciudad y el lago Cocibolca.",
+            rating: 4.5,
+            reviews: 98,
+            tag: "Historia",
+            price: null
+        },
+        {
+            id: 7,
+            name: "Parque Central",
+            category: "Cultura",
+            location: "Centro Histórico",
+            coords: [11.9297, -85.9557],
+            image: "https://ik.imagekit.io/mnw1ere56/parque-central-granada.jpg",
+            description: "El corazón de Granada, rodeado de edificios coloniales, la Catedral y restaurantes al aire libre. Punto de encuentro de locales y turistas a toda hora del día.",
+            rating: 4.7,
+            reviews: 310,
+            tag: "Cultura",
+            price: null
+        },
+        {
+            id: 8,
+            name: "Iglesia de Xalteva",
+            category: "Cultura",
+            location: "Calle Real Xalteva",
+            coords: [11.9289, -85.9623],
+            image: "https://ik.imagekit.io/mnw1ere56/iglesia-xalteva.jpg",
+            description: "Iglesia colonial del siglo XVIII con un cementerio histórico adjunto. Su fachada barroca y ambiente tranquilo la convierten en un refugio cultural fuera del circuito más transitado.",
+            rating: 4.4,
+            reviews: 67,
+            tag: "Historia",
+            price: null
+        },
+
+        // ── Naturaleza ───────────────────────────────────────────────────────
+        {
+            id: 9,
+            name: "Volcán Mombacho",
+            category: "Naturaleza",
+            location: "A 10 km de Granada",
+            coords: [11.8278, -85.9656],
+            image: "https://ik.imagekit.io/mnw1ere56/volcan-mombacho.jpg",
+            description: "Reserva natural con bosque nuboso, senderos para senderismo y tirolesas. Desde la cima hay vistas espectaculares del lago y las Isletas. A solo 10 km del centro de Granada.",
+            rating: 4.9,
+            reviews: 185,
+            tag: "Naturaleza",
+            price: null
+        },
+        {
+            id: 10,
+            name: "Laguna de Apoyo",
+            category: "Naturaleza",
+            location: "Entre Granada y Masaya",
+            coords: [11.9056, -86.0325],
+            image: "https://ik.imagekit.io/mnw1ere56/laguna-de-apoyo.jpg",
+            description: "Laguna de cráter volcánico con aguas cálidas y cristalinas. Área protegida desde 1991, ideal para nadar, kayak y observación de aves. A 20 minutos de Granada.",
+            rating: 4.9,
+            reviews: 240,
+            tag: "Naturaleza",
+            price: null
+        },
+        {
+            id: 11,
+            name: "Lago Cocibolca",
+            category: "Naturaleza",
+            location: "Orilla de Granada",
+            coords: [11.9050, -85.9200],
+            image: "https://ik.imagekit.io/mnw1ere56/lago-cocibolca.jpg",
+            description: "El lago más grande de Centroamérica, con más de 400 islas. Ofrece tours en kayak, pesca artesanal y navegación. Al atardecer, las vistas desde la orilla son incomparables.",
+            rating: 4.7,
+            reviews: 160,
+            tag: "Lago",
+            price: null
+        },
+
+        // ── Comida / Restaurantes ────────────────────────────────────────────
+        {
+            id: 12,
+            name: "Mercado Municipal",
+            category: "Comida",
+            location: "Calle Atravesada",
+            coords: [11.9285, -85.9548],
+            image: "https://ik.imagekit.io/mnw1ere56/mercado-municipal-granada.jpg",
+            description: "Mercado tradicional con pasillos llenos de comida típica nicaragüense, frutas tropicales y artesanías. Ideal para desayunar vigorón o gallo pinto a precio local.",
+            rating: 4.3,
+            reviews: 145,
+            tag: "Gastronomía",
+            price: "💰 Económico"
+        },
+        {
+            id: 13,
+            name: "El Zaguán",
+            category: "Comida",
+            location: "Calle El Arsenal",
+            coords: [11.9302, -85.9553],
+            image: "https://ik.imagekit.io/mnw1ere56/el-zaguan-granada.jpg",
+            description: "Restaurante referente de la gastronomía granadina instalado en una casona colonial. Especialidad en carnes a la parrilla y platos típicos nicaragüenses en un jardín interior.",
+            rating: 4.6,
+            reviews: 198,
+            tag: "Gastronomía",
+            price: "💰💰 Moderado"
+        },
+
+        // ── Hoteles ──────────────────────────────────────────────────────────
+        {
+            id: 14,
+            name: "Hotel Plaza Colón",
+            category: "Hoteles",
+            location: "Frente al Parque Central",
+            coords: [11.9300, -85.9562],
+            image: "https://ik.imagekit.io/mnw1ere56/hotel-plaza-colon.jpg",
+            description: "Hotel boutique de lujo frente al Parque Central. Habitaciones coloniales con balcones, piscina y restaurante gourmet. La mejor ubicación de Granada con desayuno incluido.",
+            rating: 4.8,
+            reviews: 320,
+            tag: "Hotel",
+            price: "💰💰💰 Premium"
+        },
+        {
+            id: 15,
+            name: "Hotel Real La Merced",
+            category: "Hoteles",
+            location: "Cerca de Iglesia La Merced",
+            coords: [11.9318, -85.9580],
+            image: "https://ik.imagekit.io/mnw1ere56/hotel-real-la-merced.jpg",
+            description: "Encantadora posada histórica en casona colonial restaurada. Patio interior, desayuno incluido y personal atento. Excelente relación calidad-precio en el corazón de la ciudad.",
+            rating: 4.5,
+            reviews: 142,
+            tag: "Hotel",
+            price: "💰💰 Moderado"
+        },
+
+        // ── Actividades / Tours ──────────────────────────────────────────────
+        {
+            id: 16,
+            name: "Tour Volcán Masaya",
+            category: "Actividades",
+            location: "A 30 km de Granada",
+            coords: [11.9840, -86.1615],
+            image: "https://ik.imagekit.io/mnw1ere56/volcan-masaya.jpg",
+            description: "Visita al volcán activo más accesible del mundo. De noche puedes ver la lava desde el borde del cráter. Tours diurnos y nocturnos disponibles con salida desde Granada.",
+            rating: 4.9,
+            reviews: 410,
+            tag: "Tour",
+            price: "💰💰 Moderado"
+        },
+        {
+            id: 17,
+            name: "Paseo en Carruaje",
+            category: "Actividades",
+            location: "Parque Central",
+            coords: [11.9299, -85.9559],
+            image: "https://ik.imagekit.io/mnw1ere56/paseo-carruaje-granada.jpg",
+            description: "Recorrido por las calles coloniales en carruaje tirado por caballos. Ideal para conocer la historia de Granada mientras disfrutas de sus fachadas de colores. Salidas desde el Parque Central.",
+            rating: 4.6,
+            reviews: 88,
+            tag: "Tour",
+            price: "💰 Económico"
         }
     ];
 
@@ -576,7 +769,8 @@
                             <i data-lucide="star" class="w-3 h-3 fill-current"></i> ${esc(String(place.rating))}
                         </div>
                     </div>
-                    <button onclick="openModal(${place.id})" class="btn-primary mt-4">
+                    ${place.price ? `<p class="text-xs text-amber-700 font-medium mt-3">${esc(place.price)}</p>` : ''}
+                    <button onclick="openModal(${place.id})" class="btn-primary mt-2">
                         Ver detalles <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -670,6 +864,9 @@
         document.getElementById('modal-rating').textContent   = place.rating;
         document.getElementById('modal-reviews').textContent  = `(${place.reviews} reseñas)`;
         document.getElementById('modal-desc').textContent     = place.description;
+        const priceEl = document.getElementById('modal-price');
+        priceEl.textContent = place.price || '';
+        priceEl.style.display = place.price ? 'block' : 'none';
 
         document.getElementById('modal-map-btn').onclick = () => {
             closeModal();
@@ -837,7 +1034,10 @@
 
         PLACES.forEach(place => {
             const color = place.category === 'Cultura'    ? '#A52A2A' :
-                          place.category === 'Naturaleza' ? '#059669' : '#D97706';
+                          place.category === 'Naturaleza' ? '#059669' :
+                          place.category === 'Comida'     ? '#D97706' :
+                          place.category === 'Hoteles'    ? '#7C3AED' :
+                          place.category === 'Actividades'? '#0369A1' : '#6B7280';
 
             const icon = L.divIcon({
                 className: 'custom-marker',
