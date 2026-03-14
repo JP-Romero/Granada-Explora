@@ -8,10 +8,10 @@
 //               → fallback a offline.html si no hay red ni caché
 // ═══════════════════════════════════════════════════════
 
-const CACHE_STATIC = 'granada-static-v4';  // HTML, manifest, íconos
-const CACHE_TILES  = 'granada-tiles-v4';   // Tiles del mapa CartoDB
-const CACHE_IMAGES = 'granada-images-v4';  // Imágenes de lugares (ImageKit)
-const CACHE_CDN    = 'granada-cdn-v4';     // Leaflet, Lucide, Tailwind, Fonts
+const CACHE_STATIC = 'granada-static-v5';  // HTML, manifest, íconos
+const CACHE_TILES  = 'granada-tiles-v5';   // Tiles del mapa CartoDB
+const CACHE_IMAGES = 'granada-images-v5';  // Imágenes de lugares (ImageKit)
+const CACHE_CDN    = 'granada-cdn-v5';     // Leaflet, Lucide, Tailwind, Fonts
 const OFFLINE_URL  = '/offline.html';
 
 // ── Assets locales críticos ─────────────────────────────────────────────────
