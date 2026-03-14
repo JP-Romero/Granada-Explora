@@ -8,20 +8,20 @@
 //               → fallback a offline.html si no hay red ni caché
 // ═══════════════════════════════════════════════════════
 
-const CACHE_STATIC = 'granada-static-v3';  // HTML, manifest, íconos
-const CACHE_TILES  = 'granada-tiles-v3';   // Tiles del mapa CartoDB
-const CACHE_IMAGES = 'granada-images-v3';  // Imágenes de lugares (ImageKit)
-const CACHE_CDN    = 'granada-cdn-v3';     // Leaflet, Lucide, Tailwind, Fonts
-const OFFLINE_URL = '/Granada-Explora/offline.html';
+const CACHE_STATIC = 'granada-static-v4';  // HTML, manifest, íconos
+const CACHE_TILES  = 'granada-tiles-v4';   // Tiles del mapa CartoDB
+const CACHE_IMAGES = 'granada-images-v4';  // Imágenes de lugares (ImageKit)
+const CACHE_CDN    = 'granada-cdn-v4';     // Leaflet, Lucide, Tailwind, Fonts
+const OFFLINE_URL  = '/offline.html';
 
 // ── Assets locales críticos ─────────────────────────────────────────────────
 const STATIC_ASSETS = [
-    '/Granada-Explora/',
-    '/Granada-Explora/index.html',
-    '/Granada-Explora/offline.html',
-    '/Granada-Explora/manifest.json',
-    '/Granada-Explora/icons/icon-192.png',
-    '/Granada-Explora/icons/icon-512.png'
+    '/',
+    '/index.html',
+    '/offline.html',
+    '/manifest.json',
+    '/icons/icon-192.png',
+    '/icons/icon-512.png'
 ];
 
 // ── Tiles de Granada, Nicaragua ─────────────────────────────────────────────
