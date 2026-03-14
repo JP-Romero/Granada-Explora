@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sin conexión — Granada Explora</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#C2410C">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --brick:  #C2410C;
+            --amber:  #D97706;
+            --sand:   #FDF3E3;
+            --soft:   #F5E4CC;
+            --dark:   #1C0F00;
+            --mid:    #7C4A1A;
+            --gray:   #9CA3AF;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--sand);
+            color: var(--dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Decoración superior ── */
+        .top-bar {
+            height: 5px;
+            background: linear-gradient(90deg, var(--brick), var(--amber), var(--brick));
+        }
+
+        /* ── Header ── */
+        header {
+            padding: 28px 28px 20px;
+            background: white;
+            border-bottom: 1px solid #F0DFC0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .app-icon {
+            width: 40px; height: 40px;
+            background: var(--brick);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+        .app-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark);
+            line-height: 1;
+        }
+        .app-sub {
+            font-size: 0.7rem;
+            color: var(--gray);
+            margin-top: 2px;
+            letter-spacing: .04em;
+        }
+
+        /* ── Contenido principal ── */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 28px;
+            text-align: center;
+        }
+
+        /* Ilustración de la catedral con señal wifi rota */
+        .illustration {
+            position: relative;
+            width: 180px;
+            height: 180px;
+            margin-bottom: 32px;
+        }
+
+        /* Ícono de wifi con efecto de no señal */
+        .wifi-icon {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 44px;
+            height: 44px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 12px rgba(0,0,0,.12);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+            z-index: 2;
+        }
+
+        .cathedral-svg {
+            width: 180px;
+            height: 180px;
+            opacity: .9;
+        }
+
+        /* Texto */
+        .label-tag {
+            display: inline-block;
+            background: #FEF3C7;
+            color: #92400E;
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border-radius: 100px;
+            margin-bottom: 14px;
+        }
+
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: var(--dark);
+            line-height: 1.1;
+            margin-bottom: 14px;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--gray);
+            line-height: 1.6;
+            max-width: 280px;
+            margin: 0 auto 36px;
+        }
+
+        /* Botón reintentar */
+        .btn-retry {
+            background: var(--brick);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: 16px 36px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .15s, transform .1s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .btn-retry:active { transform: scale(.97); background: #9A3309; }
+
+        .hint {
+            font-size: 0.75rem;
+            color: var(--gray);
+        }
+
+        /* ── Lugares disponibles offline ── */
+        .offline-section {
+            width: 100%;
+            max-width: 420px;
+            margin-top: 48px;
+        }
+
+        .section-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .section-divider::before,
+        .section-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #E8D5B7;
+        }
+        .section-divider span {
+            font-size: 0.7rem;
+            color: var(--gray);
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .place-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: white;
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 10px rgba(28,15,0,.05);
+        }
+        .place-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .place-name {
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: var(--dark);
+        }
+        .place-loc {
+            font-size: 0.7rem;
+            color: var(--gray);
+            margin-top: 2px;
+        }
+        .place-tag {
+            margin-left: auto;
+            font-size: 0.6rem;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 100px;
+            background: #FEF3C7;
+            color: #92400E;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        /* ── Footer ── */
+        footer {
+            padding: 20px;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #D1C0A8;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar"></div>
+
+    <header>
+        <div class="app-icon">🏛️</div>
+        <div>
+            <div class="app-name">Granada Explora</div>
+            <div class="app-sub">Nicaragua · Guía Turística</div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Ilustración -->
+        <div class="illustration">
+            <!-- Catedral simplificada en SVG -->
+            <svg class="cathedral-svg" viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+                <!-- Fondo circular -->
+                <circle cx="90" cy="90" r="84" fill="#FFF7ED" opacity=".8"/>
+                <circle cx="90" cy="90" r="84" fill="none" stroke="#F0DFC0" stroke-width="1.5"/>
+
+                <!-- Torres laterales -->
+                <rect x="34" y="82" width="22" height="55" rx="2" fill="#E8D5B7"/>
+                <ellipse cx="45" cy="82" rx="11" ry="10" fill="#E8D5B7"/>
+                <rect x="124" y="82" width="22" height="55" rx="2" fill="#E8D5B7"/>
+                <ellipse cx="135" cy="82" rx="11" ry="10" fill="#E8D5B7"/>
+
+                <!-- Cuerpo principal -->
+                <rect x="52" y="90" width="76" height="47" rx="3" fill="#D97706"/>
+
+                <!-- Cúpula -->
+                <ellipse cx="90" cy="90" rx="38" ry="30" fill="#D97706"/>
+                <rect x="52" y="90" width="76" height="15" fill="#D97706"/>
+
+                <!-- Cruz -->
+                <rect x="88" y="54" width="4" height="22" rx="1" fill="#C2410C"/>
+                <rect x="82" y="61" width="16" height="4" rx="1" fill="#C2410C"/>
+
+                <!-- Puerta -->
+                <rect x="81" y="117" width="18" height="20" rx="9" fill="#FDF3E3"/>
+
+                <!-- Ventanas torre -->
+                <rect x="39" y="92" width="12" height="14" rx="6" fill="white" opacity=".7"/>
+                <rect x="129" y="92" width="12" height="14" rx="6" fill="white" opacity=".7"/>
+
+                <!-- Escalones -->
+                <rect x="46" y="137" width="88" height="5" rx="1" fill="#E8D5B7"/>
+                <rect x="40" y="142" width="100" height="5" rx="1" fill="#E8D5B7"/>
+
+                <!-- Efecto gris/desaturado en la parte superior para indicar "offline" -->
+                <rect x="6" y="6" width="168" height="168" rx="84" fill="url(#gray-overlay)" opacity=".15"/>
+                <defs>
+                    <radialGradient id="gray-overlay" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stop-color="transparent"/>
+                        <stop offset="100%" stop-color="#6B7280"/>
+                    </radialGradient>
+                </defs>
+            </svg>
+
+            <!-- Badge wifi cortado -->
+            <div class="wifi-icon">📵</div>
+        </div>
+
+        <div class="label-tag">Sin conexión</div>
+        <h1>La Gran Sultana<br><em style="font-style:italic;font-weight:400;">te espera</em></h1>
+        <p class="subtitle">
+            Parece que no tienes internet. Conecta tu red y vuelve a explorar Granada.
+        </p>
+
+        <button class="btn-retry" onclick="retryConnection()">
+            ↻ Reintentar conexión
+        </button>
+        <p class="hint">O sigue explorando con la info guardada ↓</p>
+
+        <!-- Lugares disponibles sin conexión -->
+        <div class="offline-section">
+            <div class="section-divider">
+                <span>Lugares guardados</span>
+            </div>
+
+            <div class="place-row">
+                <div class="place-dot" style="background:#A52A2A"></div>
+                <div>
+                    <div class="place-name">Catedral de Granada</div>
+                    <div class="place-loc">📍 Parque Central</div>
+                </div>
+                <span class="place-tag">Museo</span>
+            </div>
+
+            <div class="place-row">
+                <div class="place-dot" style="background:#059669"></div>
+                <div>
+                    <div class="place-name">Las Isletas</div>
+                    <div class="place-loc">📍 Lago Cocibolca</div>
+                </div>
+                <span class="place-tag">Naturaleza</span>
+            </div>
+
+            <div class="place-row">
+                <div class="place-dot" style="background:#A52A2A"></div>
+                <div>
+                    <div class="place-name">Iglesia La Merced</div>
+                    <div class="place-loc">📍 Calle Real</div>
+                </div>
+                <span class="place-tag">Historia</span>
+            </div>
+
+            <div class="place-row">
+                <div class="place-dot" style="background:#D97706"></div>
+                <div>
+                    <div class="place-name">Calle La Calzada</div>
+                    <div class="place-loc">📍 Centro Histórico</div>
+                </div>
+                <span class="place-tag">Gastronomía</span>
+            </div>
+        </div>
+    </main>
+
+    <footer>Granada Explora · La Gran Sultana de Nicaragua</footer>
+
+    <script>
+        function retryConnection() {
+            const btn = document.querySelector('.btn-retry');
+            btn.textContent = '⏳ Comprobando...';
+            btn.disabled = true;
+
+            // Intentar cargar la app principal
+            fetch('/index.html', { cache: 'no-store' })
+                .then(() => { window.location.href = '/'; })
+                .catch(() => {
+                    btn.textContent = '↻ Reintentar conexión';
+                    btn.disabled = false;
+                    // Pequeño shake visual para indicar que sigue sin conexión
+                    btn.style.animation = 'none';
+                    btn.offsetHeight; // reflow
+                    btn.style.animation = 'shake .4s ease';
+                });
+        }
+
+        // Auto-reintento cuando vuelve la conexión
+        window.addEventListener('online', () => {
+            window.location.href = '/';
+        });
+    </script>
+    <style>
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25%       { transform: translateX(-6px); }
+            75%       { transform: translateX(6px); }
+        }
+    </style>
+</body>
+</html>
