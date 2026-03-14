@@ -12,16 +12,16 @@ const CACHE_STATIC = 'granada-static-v3';  // HTML, manifest, íconos
 const CACHE_TILES  = 'granada-tiles-v3';   // Tiles del mapa CartoDB
 const CACHE_IMAGES = 'granada-images-v3';  // Imágenes de lugares (ImageKit)
 const CACHE_CDN    = 'granada-cdn-v3';     // Leaflet, Lucide, Tailwind, Fonts
-const OFFLINE_URL = '/NOMBRE-REPO/offline.html';
+const OFFLINE_URL = '/Granada-Explora/offline.html';
 
 // ── Assets locales críticos ─────────────────────────────────────────────────
 const STATIC_ASSETS = [
-    '/NOMBRE-REPO/',
-    '/NOMBRE-REPO/index.html',
-    '/NOMBRE-REPO/offline.html',
-    '/NOMBRE-REPO/manifest.json',
-    '/NOMBRE-REPO/icons/icon-192.png',
-    '/NOMBRE-REPO/icons/icon-512.png'
+    '/Granada-Explora/',
+    '/Granada-Explora/index.html',
+    '/Granada-Explora/offline.html',
+    '/Granada-Explora/manifest.json',
+    '/Granada-Explora/icons/icon-192.png',
+    '/Granada-Explora/icons/icon-512.png'
 ];
 
 // ── Tiles de Granada, Nicaragua ─────────────────────────────────────────────
