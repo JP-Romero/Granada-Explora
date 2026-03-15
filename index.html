@@ -4,428 +4,217 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Granada Explora - PWA</title>
+    
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#C2410C">
+    <meta name="theme-color" content="#FFC107">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
     <style>
-        :root {
-            --amber:    #D97706;
-            --brick:    #C2410C;
-            --sand:     #FDF3E3;
-            --dark:     #1C0F00;
-            --mid:      #7C4A1A;
-            --soft:     #F5E6CC;
-            --green:    #065F46;
-            --map-h:    calc(100vh - 160px);
-        }
-
-        * { box-sizing: border-box; }
-
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background-color: var(--sand);
-            color: var(--dark);
-            -webkit-font-smoothing: antialiased;
-        }
-
-        .font-title { font-family: 'Cormorant Garamond', serif; }
-
-        /* ── Scrollbar ── */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; background-color: #FDF5E6; }
+        .font-title { font-family: 'Playfair Display', serif; }
+        .catedral-yellow { background-color: #FFC107; }
+        .card-shadow { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        /* ── Map ── */
-        #map { height: var(--map-h); width: 100%; z-index: 1; touch-action: none; }
-
-        /* ── Nav active ── */
-        .active-nav { color: var(--brick) !important; }
-        .active-nav span { font-weight: 600; }
-
-        /* ── Filter pills ── */
-        .filter-pill {
-            padding: 8px 18px;
-            border-radius: 100px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            border: 1.5px solid #E5C99A;
-            background: white;
-            color: var(--mid);
-            transition: all .2s ease;
-            white-space: nowrap;
-            cursor: pointer;
+        
+        /* MEJORA: touch-action:none evita que el navegador móvil
+           intercepte el pellizco y haga zoom en la página entera */
+        #map { 
+            height: calc(100vh - 160px); 
+            width: 100%; 
+            z-index: 1;
+            touch-action: none;
         }
-        .filter-pill.active {
-            background: var(--brick);
-            border-color: var(--brick);
-            color: white;
-            box-shadow: 0 4px 12px rgba(194,65,12,.3);
-        }
-
-        /* ── Cards ── */
-        .place-card {
-            background: white;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 2px 16px rgba(28,15,0,.07);
-            transition: transform .2s ease, box-shadow .2s ease;
-        }
-        .place-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(28,15,0,.12); }
-
-        /* ── Buttons ── */
-        .btn-primary {
-            background: var(--brick);
-            color: white;
-            border-radius: 14px;
-            padding: 14px;
-            font-weight: 600;
-            font-size: 0.875rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: background .15s, transform .1s;
-            cursor: pointer;
-            border: none;
-            width: 100%;
-        }
-        .btn-primary:active { transform: scale(.97); background: #9A3309; }
-
-        /* ── Modal ── */
-        #modal-details {
-            position: fixed; inset: 0;
-            background: rgba(28,15,0,.55);
-            z-index: 2000;
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity .25s ease;
-        }
-        #modal-details.open {
-            opacity: 1;
-            pointer-events: all;
-        }
-        #modal-inner {
-            background: white;
-            width: 100%;
-            max-width: 480px;
-            border-radius: 28px 28px 0 0;
-            overflow: hidden;
-            max-height: 90vh;
-            overflow-y: auto;
-            transform: translateY(100%);
-            transition: transform .3s cubic-bezier(.4,0,.2,1);
-        }
-        #modal-details.open #modal-inner { transform: translateY(0); }
-
-        @media (min-width: 640px) {
-            #modal-details { align-items: center; padding: 16px; }
-            #modal-inner { border-radius: 28px; }
-        }
-
-        /* ── Toast ── */
-        #toast {
-            position: fixed;
-            bottom: 90px;
-            left: 50%;
-            transform: translateX(-50%) translateY(20px);
-            background: var(--dark);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 100px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            z-index: 3000;
-            opacity: 0;
-            transition: opacity .2s, transform .2s;
-            white-space: nowrap;
-            pointer-events: none;
-        }
-        #toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-
-        /* ── Header decorative line ── */
-        .header-rule {
-            height: 3px;
-            background: linear-gradient(90deg, var(--brick), var(--amber), transparent);
-            border-radius: 4px;
-            margin-top: 6px;
-        }
-
-        /* ── Fav icon animation ── */
-        @keyframes heartPop {
-            0%   { transform: scale(1); }
-            40%  { transform: scale(1.35); }
-            100% { transform: scale(1); }
-        }
-        .heart-pop { animation: heartPop .3s ease forwards; }
-
-        /* ── Route card ── */
-        .route-card {
-            background: white;
-            border-radius: 20px;
-            padding: 22px;
-            box-shadow: 0 2px 16px rgba(28,15,0,.07);
-        }
-
-        /* ── Section fade-in ── */
-        .section-enter { animation: fadeUp .25s ease both; }
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(12px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ── Indicador offline ── */
-        #offline-banner {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            background: var(--dark);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            font-size: 0.78rem;
-            font-weight: 500;
-            padding: 10px 16px;
-            z-index: 9999;
-            transform: translateY(-100%);
-            transition: transform .3s cubic-bezier(.4,0,.2,1);
-        }
-        #offline-banner.visible { transform: translateY(0); }
-        #offline-banner .dot {
-            width: 7px; height: 7px;
-            border-radius: 50%;
-            background: #EF4444;
-            animation: blink 1.4s ease infinite;
-        }
-        #offline-banner.back-online { background: var(--green); }
-        #offline-banner.back-online .dot { background: #6EE7B7; animation: none; }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50%       { opacity: .3; }
-        }
-
-        /* Empujar contenido cuando el banner está visible */
-        body.offline-mode > div:first-of-type { padding-top: 44px; }
-
-        /* ── Texture overlay on header ── */
-        .header-texture {
-            background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23C2410C' fill-opacity='0.04'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E");
-        }
+        .active-nav { color: #A52A2A !important; font-weight: bold; }
     </style>
 </head>
 <body class="pb-24">
 
-    <!-- Banner de estado de conexión -->
-    <div id="offline-banner" role="status" aria-live="polite">
-        <span class="dot"></span>
-        <span id="offline-msg">Sin conexión — Mostrando contenido guardado</span>
+    <!-- Indicador de Offline -->
+    <div id="offline-indicator" class="hidden fixed top-0 left-0 right-0 bg-red-600 text-white text-[10px] py-1 text-center font-bold z-[3000] animate-pulse">
+        MODO SIN CONEXIÓN - ALGUNAS FUNCIONES PUEDEN NO ESTAR DISPONIBLES
     </div>
 
-    <!-- ════════════════════════════════
+    <!-- ════════════════════════════
          SECCIÓN: INICIO
-    ════════════════════════════════ -->
+    ════════════════════════════ -->
     <div id="section-home">
-        <header class="px-6 pt-12 pb-5 bg-white border-b border-orange-100 header-texture">
-            <p class="text-xs font-medium tracking-widest text-amber-600 uppercase mb-1">Nicaragua</p>
-            <h1 class="text-4xl font-title text-[#1C0F00]">Granada Explora</h1>
-            <div class="header-rule w-32 mt-1"></div>
-            <p class="text-gray-400 text-sm mt-2">Descubre la Gran Sultana</p>
+        <header class="p-6 pt-12 bg-white border-b border-orange-100">
+            <h1 class="text-3xl font-title text-orange-900">Granada Explora</h1>
+            <p class="text-gray-500 text-sm">Descubre la Gran Sultana</p>
         </header>
 
-        <div class="px-6 pt-5">
+        <div class="px-6 pt-4">
             <div class="relative">
-                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300"></i>
-                <input type="text" id="search-input"
-                    oninput="handleSearch(this.value)"
-                    placeholder="Buscar lugares, barrios…"
-                    class="w-full pl-11 pr-4 py-3.5 bg-white border border-orange-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-200 transition-all shadow-sm">
+                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                <input type="text" id="search-input" oninput="handleSearch(this.value)" placeholder="Buscar lugares..." 
+                    class="w-full pl-12 pr-4 py-4 bg-white border border-orange-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-200 transition-all shadow-sm">
             </div>
         </div>
 
-        <div class="flex gap-2 px-6 pt-4 pb-2 overflow-x-auto no-scrollbar">
-            <button onclick="setFilter('Todos')"       id="filter-Todos"       class="filter-pill active">Todos</button>
-            <button onclick="setFilter('Cultura')"     id="filter-Cultura"     class="filter-pill">Cultura</button>
-            <button onclick="setFilter('Naturaleza')"  id="filter-Naturaleza"  class="filter-pill">Naturaleza</button>
-            <button onclick="setFilter('Comida')"      id="filter-Comida"      class="filter-pill">Comida</button>
-            <button onclick="setFilter('Hoteles')"     id="filter-Hoteles"     class="filter-pill">Hoteles</button>
-            <button onclick="setFilter('Actividades')" id="filter-Actividades" class="filter-pill">Actividades</button>
+        <!-- MEJORA: filtros Hoteles y Actividades añadidos -->
+        <div class="flex space-x-3 p-6 overflow-x-auto no-scrollbar">
+            <button onclick="setFilter('Todos')"       id="filter-Todos"       class="filter-btn catedral-yellow px-4 py-2 rounded-full text-sm font-semibold shadow-sm whitespace-nowrap">Todos</button>
+            <button onclick="setFilter('Cultura')"     id="filter-Cultura"     class="filter-btn bg-white border border-orange-200 px-4 py-2 rounded-full text-sm text-gray-600 whitespace-nowrap">Cultura</button>
+            <button onclick="setFilter('Naturaleza')"  id="filter-Naturaleza"  class="filter-btn bg-white border border-orange-200 px-4 py-2 rounded-full text-sm text-gray-600 whitespace-nowrap">Naturaleza</button>
+            <button onclick="setFilter('Comida')"      id="filter-Comida"      class="filter-btn bg-white border border-orange-200 px-4 py-2 rounded-full text-sm text-gray-600 whitespace-nowrap">Comida</button>
+            <button onclick="setFilter('Hoteles')"     id="filter-Hoteles"     class="filter-btn bg-white border border-orange-200 px-4 py-2 rounded-full text-sm text-gray-600 whitespace-nowrap">Hoteles</button>
+            <button onclick="setFilter('Actividades')" id="filter-Actividades" class="filter-btn bg-white border border-orange-200 px-4 py-2 rounded-full text-sm text-gray-600 whitespace-nowrap">Actividades</button>
         </div>
 
-        <main class="px-6 pt-2 pb-4 space-y-4">
-            <h2 class="text-lg font-semibold text-gray-700 mt-2">Lugares imprescindibles</h2>
-            <div id="places-container" class="space-y-4"></div>
+        <main class="px-6 space-y-6">
+            <h2 class="text-xl font-bold text-gray-800">Lugares Imprescindibles</h2>
+            <div id="places-container" class="space-y-6"></div>
         </main>
     </div>
 
-    <!-- ════════════════════════════════
+    <!-- ════════════════════════════
          SECCIÓN: MAPA
-    ════════════════════════════════ -->
-    <div id="section-map" class="hidden">
-        <div class="px-6 pt-12 pb-4 bg-white flex justify-between items-center border-b border-orange-50 header-texture">
-            <div>
-                <h2 class="text-3xl font-title text-[#1C0F00]">Mapa Turístico</h2>
-                <div class="header-rule w-24 mt-1"></div>
-            </div>
-            <button onclick="getLocation()"
-                class="bg-orange-50 p-2.5 rounded-full text-[#C2410C] shadow-sm hover:bg-orange-100 transition-colors">
-                <i data-lucide="navigation" class="w-5 h-5"></i>
+    ════════════════════════════ -->
+    <div id="section-map" class="hidden relative">
+        <div class="p-6 pt-12 bg-white flex justify-between items-center border-b border-orange-50">
+            <h2 class="text-2xl font-title text-orange-900">Mapa Turístico</h2>
+            <button onclick="getLocation()" class="bg-orange-100 p-2 rounded-full text-orange-900 shadow-sm hover:bg-orange-200 transition-colors">
+                <i data-lucide="navigation"></i>
             </button>
         </div>
         <div id="map"></div>
-
-        <!-- Leyenda -->
-        <div class="absolute bottom-28 left-4 z-[1000] bg-white/95 backdrop-blur-sm p-3 rounded-2xl shadow-lg border border-orange-50 space-y-2">
-            <p class="text-[9px] font-bold text-gray-400 tracking-wider uppercase mb-1">Leyenda</p>
-            <div class="flex items-center gap-2 text-[11px] font-medium text-gray-700">
-                <div class="w-2.5 h-2.5 rounded-full bg-[#A52A2A] shrink-0"></div> Cultura
+        
+        <!-- MEJORA: leyenda actualizada con Hoteles y Actividades -->
+        <div class="absolute bottom-28 left-6 z-[1000] bg-white/90 backdrop-blur-sm p-3 rounded-2xl shadow-lg border border-orange-50 space-y-2">
+            <div class="flex items-center gap-2 text-[10px] font-bold text-gray-700">
+                <div class="w-3 h-3 rounded-full bg-[#A52A2A]"></div> Cultura
             </div>
-            <div class="flex items-center gap-2 text-[11px] font-medium text-gray-700">
-                <div class="w-2.5 h-2.5 rounded-full bg-[#059669] shrink-0"></div> Naturaleza
+            <div class="flex items-center gap-2 text-[10px] font-bold text-gray-700">
+                <div class="w-3 h-3 rounded-full bg-[#059669]"></div> Naturaleza
             </div>
-            <div class="flex items-center gap-2 text-[11px] font-medium text-gray-700">
-                <div class="w-2.5 h-2.5 rounded-full bg-[#D97706] shrink-0"></div> Comida
+            <div class="flex items-center gap-2 text-[10px] font-bold text-gray-700">
+                <div class="w-3 h-3 rounded-full bg-[#D97706]"></div> Comida
             </div>
-            <div class="flex items-center gap-2 text-[11px] font-medium text-gray-700">
-                <div class="w-2.5 h-2.5 rounded-full bg-[#7C3AED] shrink-0"></div> Hoteles
+            <div class="flex items-center gap-2 text-[10px] font-bold text-gray-700">
+                <div class="w-3 h-3 rounded-full bg-[#7C3AED]"></div> Hoteles
             </div>
-            <div class="flex items-center gap-2 text-[11px] font-medium text-gray-700">
-                <div class="w-2.5 h-2.5 rounded-full bg-[#0369A1] shrink-0"></div> Actividades
+            <div class="flex items-center gap-2 text-[10px] font-bold text-gray-700">
+                <div class="w-3 h-3 rounded-full bg-[#0369A1]"></div> Actividades
             </div>
         </div>
     </div>
 
-    <!-- ════════════════════════════════
+    <!-- ════════════════════════════
          SECCIÓN: RUTAS
-    ════════════════════════════════ -->
+    ════════════════════════════ -->
     <div id="section-routes" class="hidden">
-        <header class="px-6 pt-12 pb-5 bg-white border-b border-orange-100 header-texture">
-            <p class="text-xs font-medium tracking-widest text-amber-600 uppercase mb-1">Itinerarios</p>
-            <h1 class="text-4xl font-title text-[#1C0F00]">Rutas</h1>
-            <div class="header-rule w-20 mt-1"></div>
-            <p class="text-gray-400 text-sm mt-2">Diseñadas para ti</p>
+        <header class="p-6 pt-12 bg-white border-b border-orange-100">
+            <h1 class="text-3xl font-title text-orange-900">Rutas Recomendadas</h1>
+            <p class="text-gray-500 text-sm">Itinerarios diseñados para ti</p>
         </header>
         <main class="p-6 space-y-4">
-            <div id="routes-container" class="space-y-4"></div>
+            <div id="routes-container" class="space-y-6"></div>
         </main>
     </div>
 
-    <!-- ════════════════════════════════
+    <!-- ════════════════════════════
          SECCIÓN: FAVORITOS
-    ════════════════════════════════ -->
+    ════════════════════════════ -->
     <div id="section-profile" class="hidden">
-        <header class="px-6 pt-12 pb-5 bg-white border-b border-orange-100 header-texture">
-            <p class="text-xs font-medium tracking-widest text-amber-600 uppercase mb-1">Mi colección</p>
-            <h1 class="text-4xl font-title text-[#1C0F00]">Favoritos</h1>
-            <div class="header-rule w-24 mt-1"></div>
+        <header class="p-6 pt-12 bg-white border-b border-orange-100">
+            <h1 class="text-3xl font-title text-orange-900">Mi Perfil</h1>
+            <p class="text-gray-500 text-sm">Tus lugares favoritos guardados</p>
         </header>
         <main class="p-6">
-            <div id="favorites-container" class="space-y-4"></div>
-            <!-- Estado vacío: usa display:flex mediante clase CSS, no Tailwind inline -->
-            <div id="empty-favorites" class="py-20 text-center" style="display:none;">
-                <div class="inline-flex bg-orange-50 p-6 rounded-full mb-5">
-                    <i data-lucide="heart" class="w-10 h-10 text-orange-200"></i>
+            <div id="favorites-container" class="space-y-6"></div>
+            <!-- MEJORA: estado vacío sin conflicto hidden/flex -->
+            <div id="empty-favorites" style="display:none;" class="flex flex-col items-center justify-center py-20 text-center">
+                <div class="bg-orange-50 p-6 rounded-full mb-4">
+                    <i data-lucide="heart" class="w-12 h-12 text-orange-200"></i>
                 </div>
-                <h3 class="text-lg font-bold text-gray-800">Sin favoritos aún</h3>
-                <p class="text-gray-400 text-sm mt-2 max-w-xs mx-auto">
-                    Explora Granada y guarda los lugares que más te emocionen.
-                </p>
-                <button onclick="showSection('home')"
-                    class="mt-6 bg-[#C2410C] text-white px-8 py-3 rounded-2xl font-semibold text-sm">
-                    Explorar ahora
-                </button>
+                <h3 class="text-lg font-bold text-gray-800">No tienes favoritos aún</h3>
+                <p class="text-gray-500 mt-2">Explora Granada y guarda los lugares que más te gusten.</p>
+                <button onclick="showSection('home')" class="mt-6 bg-orange-900 text-white px-6 py-3 rounded-xl font-semibold">Explorar ahora</button>
             </div>
         </main>
     </div>
 
-    <!-- ════════════════════════════════
-         BARRA DE NAVEGACIÓN
-    ════════════════════════════════ -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3 flex justify-around items-center z-[1000] shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
-        <button onclick="showSection('home')"   id="btn-home"   class="flex flex-col items-center active-nav transition-all">
-            <i data-lucide="home"        class="w-5 h-5"></i>
-            <span class="text-[10px] mt-1">Inicio</span>
+    <!-- ════════════════════════════
+         NAVEGACIÓN
+    ════════════════════════════ -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3 flex justify-around items-center z-[1000] shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+        <button onclick="showSection('home')"    id="btn-home"    class="flex flex-col items-center active-nav transition-all">
+            <i data-lucide="home"       class="w-6 h-6"></i>
+            <span class="text-[10px] mt-1 font-medium">Inicio</span>
         </button>
-        <button onclick="showSection('map')"    id="btn-map"    class="flex flex-col items-center text-gray-400 transition-all">
-            <i data-lucide="map-pinned"  class="w-5 h-5"></i>
-            <span class="text-[10px] mt-1">Mapa</span>
+        <button onclick="showSection('map')"     id="btn-map"     class="flex flex-col items-center text-gray-400 transition-all">
+            <i data-lucide="map-pinned" class="w-6 h-6"></i>
+            <span class="text-[10px] mt-1 font-medium">Mapa</span>
         </button>
-        <button onclick="showSection('routes')" id="btn-routes" class="flex flex-col items-center text-gray-400 transition-all">
-            <i data-lucide="navigation"  class="w-5 h-5"></i>
-            <span class="text-[10px] mt-1">Rutas</span>
+        <button onclick="showSection('routes')"  id="btn-routes"  class="flex flex-col items-center text-gray-400 transition-all">
+            <i data-lucide="navigation" class="w-6 h-6"></i>
+            <span class="text-[10px] mt-1 font-medium">Rutas</span>
         </button>
         <button onclick="showSection('profile')" id="btn-profile" class="flex flex-col items-center text-gray-400 transition-all">
-            <i data-lucide="heart"       class="w-5 h-5"></i>
-            <span class="text-[10px] mt-1">Favoritos</span>
+            <i data-lucide="heart"      class="w-6 h-6"></i>
+            <span class="text-[10px] mt-1 font-medium">Favoritos</span>
         </button>
     </nav>
 
-    <!-- ════════════════════════════════
+    <!-- ════════════════════════════
          MODAL DE DETALLES
-    ════════════════════════════════ -->
-    <div id="modal-details" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-        <div id="modal-inner">
-            <div class="relative h-60">
+    ════════════════════════════ -->
+    <div id="modal-details" class="fixed inset-0 bg-black/60 z-[2000] hidden items-end sm:items-center justify-center p-0 sm:p-4" style="display:none;">
+        <div class="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden max-h-[90vh] overflow-y-auto">
+            <div class="relative h-64">
                 <img id="modal-img" src="" alt="" class="w-full h-full object-cover">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                <button onclick="closeModal()"
-                    class="absolute top-4 right-4 bg-white/90 p-2 rounded-full shadow-lg">
-                    <i data-lucide="x" class="w-5 h-5 text-gray-800"></i>
+                <button onclick="closeModal()" class="absolute top-4 right-4 bg-white/90 p-2 rounded-full shadow-lg">
+                    <i data-lucide="x" class="w-6 h-6 text-gray-800"></i>
                 </button>
-                <span id="modal-tag"
-                    class="absolute bottom-4 left-5 bg-white/90 text-[#7C4A1A] text-[10px] font-bold px-3 py-1 rounded-full tracking-wider uppercase"></span>
             </div>
             <div class="p-6">
-                <h2 id="modal-title" class="text-2xl font-title font-bold text-[#1C0F00]"></h2>
-                <p id="modal-location" class="text-gray-400 flex items-center gap-1 mt-1 text-sm">
-                    <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
-                    <span id="modal-location-text"></span>
-                </p>
-
-                <div class="flex items-center gap-3 mt-3 mb-5">
-                    <div class="flex items-center gap-1 text-amber-500 font-semibold text-sm">
-                        <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h2 id="modal-title" class="text-2xl font-bold text-gray-900"></h2>
+                        <p class="text-gray-500 flex items-center mt-1">
+                            <i data-lucide="map-pin" class="w-4 h-4 mr-1"></i>
+                            <span id="modal-location-text"></span>
+                        </p>
+                    </div>
+                    <span id="modal-tag" class="bg-yellow-100 text-yellow-800 text-xs font-bold px-3 py-1 rounded-full"></span>
+                </div>
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="flex items-center text-orange-600 font-bold">
+                        <i data-lucide="star" class="w-4 h-4 fill-current mr-1"></i>
                         <span id="modal-rating"></span>
                     </div>
-                    <span id="modal-reviews" class="text-gray-400 text-xs"></span>
+                    <span id="modal-reviews" class="text-gray-400 text-sm"></span>
                 </div>
-
-                <p id="modal-desc" class="text-gray-500 text-sm leading-relaxed mb-3"></p>
-                <p id="modal-price" class="text-amber-700 text-xs font-semibold mb-7"></p>
-
-                <div class="flex gap-3">
-                    <button onclick="toggleFavoriteFromModal()" id="modal-fav-btn"
-                        class="flex-1 bg-orange-50 text-[#7C4A1A] py-4 rounded-2xl font-semibold text-sm flex justify-center items-center gap-2 transition-all">
-                        <i data-lucide="heart" class="w-4 h-4"></i>
+                <!-- MEJORA: campo de precio -->
+                <p id="modal-price" class="text-amber-700 text-xs font-semibold mb-3" style="display:none;"></p>
+                <p id="modal-desc" class="text-gray-600 leading-relaxed mb-6"></p>
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                    <button onclick="toggleFavoriteFromModal()" id="modal-fav-btn" class="bg-orange-50 text-orange-900 py-4 rounded-2xl font-bold flex justify-center items-center gap-2">
+                        <i data-lucide="heart" class="w-5 h-5"></i>
                         <span id="modal-fav-text">Guardar</span>
                     </button>
-                    <button id="modal-map-btn"
-                        class="flex-1 bg-[#C2410C] text-white py-4 rounded-2xl font-semibold text-sm flex justify-center items-center gap-2 transition-all hover:bg-[#9A3309]">
-                        <i data-lucide="map" class="w-4 h-4"></i> Ver en mapa
+                    <button id="modal-map-btn" class="bg-orange-900 text-white py-4 rounded-2xl font-bold flex justify-center items-center gap-2">
+                        <i data-lucide="map" class="w-5 h-5"></i> Ver en mapa
                     </button>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="sharePlace()" class="bg-white border border-orange-100 text-orange-900 py-3 rounded-2xl font-semibold flex justify-center items-center gap-2 text-sm">
+                        <i data-lucide="share-2" class="w-4 h-4"></i> Compartir
+                    </button>
+                    <a id="modal-directions-btn" href="#" target="_blank" class="bg-white border border-orange-100 text-orange-900 py-3 rounded-2xl font-semibold flex justify-center items-center gap-2 text-sm">
+                        <i data-lucide="external-link" class="w-4 h-4"></i> Cómo llegar
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Toast de notificación -->
-    <div id="toast"></div>
-
-    <!-- ════════════════════════════════
-         JAVASCRIPT
-    ════════════════════════════════ -->
     <script>
     // ── Datos ──────────────────────────────────────────────────────────────────
     const ROUTES = [
@@ -433,37 +222,35 @@
             id: 1,
             name: "Esencia Colonial",
             duration: "4 horas",
-            description: "Un recorrido por el corazón histórico de Granada: fachadas, campanarios y la calle más viva de la ciudad.",
+            description: "Un recorrido por el corazón histórico de Granada.",
             places: [1, 3, 4],
             icon: "landmark",
-            color: "#FEF3C7",
-            textColor: "#92400E"
+            color: "bg-orange-100 text-orange-900"
         },
         {
             id: 2,
             name: "Aventura Isletas",
             duration: "3 horas",
-            description: "Navega por el archipiélago volcánico y disfruta del silencio del lago Cocibolca.",
+            description: "Navega por el archipiélago y disfruta del lago.",
             places: [2],
             icon: "ship",
-            color: "#DBEAFE",
-            textColor: "#1E3A8A"
+            color: "bg-blue-100 text-blue-900"
         }
     ];
 
     const PLACES = [
-        // ── Originales ──────────────────────────────────────────────────────
+        // ── Cultura ─────────────────────────────────────────────────────────
         {
             id: 1,
             name: "Catedral de Granada",
             category: "Cultura",
             location: "Parque Central",
             coords: [11.9300, -85.9530],
-            image: "https://ik.imagekit.io/mnw1ere56/Catedral_de_Granada-removebg-preview.png",
-            description: "La Catedral de Nuestra Señora de la Asunción es uno de los edificios más emblemáticos de Granada. Su arquitectura neoclásica y su color amarillo vibrante la hacen inconfundible en toda Centroamérica.",
+            image: "https://ik.imagekit.io/mnw1ere56/Catedral_de_Granada-removebg-preview.png?updatedAt=1773377944986",
+            description: "La Catedral de Nuestra Señora de la Asunción es uno de los edificios más emblemáticos de Granada. Su arquitectura neoclásica y su color amarillo vibrante la hacen inconfundible.",
             rating: 4.8,
             reviews: 150,
-            tag: "Museo",
+            tag: "MUSEO",
             price: null
         },
         {
@@ -472,11 +259,11 @@
             category: "Naturaleza",
             location: "Lago Cocibolca",
             coords: [11.9130, -85.9320],
-            image: "https://ik.imagekit.io/mnw1ere56/isletas-de-granada-removebg-preview.png",
-            description: "Un archipiélago de más de 360 pequeñas islas formadas por una erupción del volcán Mombacho. Ideal para paseos en lancha y observación de aves tropicales.",
+            image: "https://ik.imagekit.io/mnw1ere56/isletas-de-granada-removebg-preview.png?updatedAt=1773379243712",
+            description: "Un archipiélago de más de 360 pequeñas islas formadas por una erupción del volcán Mombacho. Ideal para paseos en lancha y observación de aves.",
             rating: 4.9,
             reviews: 120,
-            tag: "Naturaleza",
+            tag: "NATURALEZA",
             price: null
         },
         {
@@ -485,11 +272,11 @@
             category: "Cultura",
             location: "Calle Real",
             coords: [11.9315, -85.9575],
-            image: "https://ik.imagekit.io/mnw1ere56/Iglesia%20de%20la%20Merced.jpg",
-            description: "Famosa por su torre campanario que ofrece la mejor vista panorámica de la ciudad y el volcán Mombacho al fondo. Una parada obligatoria para los amantes de la historia.",
+            image: "https://ik.imagekit.io/mnw1ere56/Iglesia%20de%20la%20Merced.jpg?updatedAt=1773435695258",
+            description: "Famosa por su torre campanario que ofrece la mejor vista panorámica de la ciudad y el volcán Mombacho.",
             rating: 4.7,
             reviews: 85,
-            tag: "Historia",
+            tag: "HISTORIA",
             price: null
         },
         {
@@ -498,39 +285,37 @@
             category: "Comida",
             location: "Centro Histórico",
             coords: [11.9295, -85.9500],
-            image: "https://ik.imagekit.io/mnw1ere56/La-calzada-5.jpg",
-            description: "La arteria más animada de Granada: restaurantes al aire libre, música en vivo y la vida nocturna más auténtica de la ciudad colonial.",
+            image: "https://ik.imagekit.io/mnw1ere56/La-calzada-5.jpg?updatedAt=1773434496950",
+            description: "La calle peatonal más animada de Granada, llena de restaurantes, bares y vida nocturna.",
             rating: 4.6,
             reviews: 210,
-            tag: "Gastronomía",
+            tag: "GASTRONOMÍA",
             price: "💰 Económico – Moderado"
         },
-
-        // ── Cultura / Historia ───────────────────────────────────────────────
         {
             id: 5,
-            name: "Convento San Francisco",
+            name: "Fortaleza La Pólvora",
             category: "Cultura",
-            location: "Calle El Arsenal",
-            coords: [11.9308, -85.9558],
-            image: "https://ik.imagekit.io/mnw1ere56/convento-san-francisco.jpg",
-            description: "Fundado en 1529, es uno de los conventos más antiguos de América Central. Alberga un museo con estatuas precolombinas de la Isla Zapatera y valiosas colecciones de arte colonial.",
-            rating: 4.8,
-            reviews: 230,
-            tag: "Historia",
+            location: "Extremo Oeste",
+            coords: [11.9332, -85.9625],
+            image: "https://ik.imagekit.io/mnw1ere56/Fortaleza%20la%20polvora.jpeg?updatedAt=1773505716973",
+            description: "Antiguo fuerte español construido en 1748 para proteger la ciudad y almacenar pólvora. Sus torres ofrecen una vista única de la zona residencial de Granada.",
+            rating: 4.5,
+            reviews: 64,
+            tag: "HISTORIA",
             price: null
         },
         {
             id: 6,
-            name: "Fortaleza La Pólvora",
+            name: "Convento San Francisco",
             category: "Cultura",
-            location: "Calle Arsenal",
-            coords: [11.9275, -85.9612],
-            image: "https://ik.imagekit.io/mnw1ere56/fortaleza-la-polvora.jpg",
-            description: "Fuerte colonial construido en 1748 para proteger la pólvora de los piratas. Sus cinco torres ofrecen una de las mejores vistas panorámicas de la ciudad y el lago Cocibolca.",
-            rating: 4.5,
-            reviews: 98,
-            tag: "Historia",
+            location: "Calle Cervantes",
+            coords: [11.9320, -85.9515],
+            image: "https://ik.imagekit.io/mnw1ere56/Convento%20San%20Francisco.jpg?updatedAt=1773502535022",
+            description: "Uno de los edificios coloniales más antiguos de Centroamérica (1529). Hoy funciona como museo y centro cultural, albergando estatuas precolombinas.",
+            rating: 4.7,
+            reviews: 92,
+            tag: "MUSEO",
             price: null
         },
         {
@@ -539,11 +324,11 @@
             category: "Cultura",
             location: "Centro Histórico",
             coords: [11.9297, -85.9557],
-            image: "https://ik.imagekit.io/mnw1ere56/parque-central-granada.jpg",
+            image: "https://ik.imagekit.io/mnw1ere56/Parque%20Central%20Granada.jpg?updatedAt=1773506128333",
             description: "El corazón de Granada, rodeado de edificios coloniales, la Catedral y restaurantes al aire libre. Punto de encuentro de locales y turistas a toda hora del día.",
             rating: 4.7,
             reviews: 310,
-            tag: "Cultura",
+            tag: "CULTURA",
             price: null
         },
         {
@@ -552,11 +337,11 @@
             category: "Cultura",
             location: "Calle Real Xalteva",
             coords: [11.9289, -85.9623],
-            image: "https://ik.imagekit.io/mnw1ere56/iglesia-xalteva.jpg",
+            image: "https://ik.imagekit.io/mnw1ere56/Iglesia%20Xalteva.jpg?updatedAt=1773506297530",
             description: "Iglesia colonial del siglo XVIII con un cementerio histórico adjunto. Su fachada barroca y ambiente tranquilo la convierten en un refugio cultural fuera del circuito más transitado.",
             rating: 4.4,
             reviews: 67,
-            tag: "Historia",
+            tag: "HISTORIA",
             price: null
         },
 
@@ -567,11 +352,11 @@
             category: "Naturaleza",
             location: "A 10 km de Granada",
             coords: [11.8278, -85.9656],
-            image: "https://ik.imagekit.io/mnw1ere56/volcan-mombacho.jpg",
-            description: "Reserva natural con bosque nuboso, senderos para senderismo y tirolesas. Desde la cima hay vistas espectaculares del lago y las Isletas. A solo 10 km del centro de Granada.",
+            image: "https://ik.imagekit.io/mnw1ere56/VolcanMombacho.jpeg?updatedAt=1773506481538",
+            description: "Reserva natural con bosque nuboso, senderos para senderismo y tirolesas. Desde la cima hay vistas espectaculares del lago y las Isletas.",
             rating: 4.9,
             reviews: 185,
-            tag: "Naturaleza",
+            tag: "NATURALEZA",
             price: null
         },
         {
@@ -580,11 +365,11 @@
             category: "Naturaleza",
             location: "Entre Granada y Masaya",
             coords: [11.9056, -86.0325],
-            image: "https://ik.imagekit.io/mnw1ere56/laguna-de-apoyo.jpg",
-            description: "Laguna de cráter volcánico con aguas cálidas y cristalinas. Área protegida desde 1991, ideal para nadar, kayak y observación de aves. A 20 minutos de Granada.",
+            image: "https://ik.imagekit.io/mnw1ere56/Laguna%20de%20Apoyo.jpg?updatedAt=1773508177173",
+            description: "Laguna de cráter volcánico con aguas cálidas y cristalinas. Área protegida ideal para nadar, kayak y observación de aves. A 20 minutos de Granada.",
             rating: 4.9,
             reviews: 240,
-            tag: "Naturaleza",
+            tag: "NATURALEZA",
             price: null
         },
         {
@@ -593,26 +378,26 @@
             category: "Naturaleza",
             location: "Orilla de Granada",
             coords: [11.9050, -85.9200],
-            image: "https://ik.imagekit.io/mnw1ere56/lago-cocibolca.jpg",
-            description: "El lago más grande de Centroamérica, con más de 400 islas. Ofrece tours en kayak, pesca artesanal y navegación. Al atardecer, las vistas desde la orilla son incomparables.",
+            image: "https://ik.imagekit.io/mnw1ere56/Lago%20Cocibolca.jpeg?updatedAt=1773508356919",
+            description: "El lago más grande de Centroamérica, con más de 400 islas. Ofrece tours en kayak, pesca artesanal y navegación. Al atardecer las vistas desde la orilla son incomparables.",
             rating: 4.7,
             reviews: 160,
-            tag: "Lago",
+            tag: "LAGO",
             price: null
         },
 
-        // ── Comida / Restaurantes ────────────────────────────────────────────
+        // ── Comida ───────────────────────────────────────────────────────────
         {
             id: 12,
             name: "Mercado Municipal",
             category: "Comida",
             location: "Calle Atravesada",
             coords: [11.9285, -85.9548],
-            image: "https://ik.imagekit.io/mnw1ere56/mercado-municipal-granada.jpg",
+            image: "https://ik.imagekit.io/mnw1ere56/Mercado%20Municipal%20de%20Granada.jpeg?updatedAt=1773508539870",
             description: "Mercado tradicional con pasillos llenos de comida típica nicaragüense, frutas tropicales y artesanías. Ideal para desayunar vigorón o gallo pinto a precio local.",
             rating: 4.3,
             reviews: 145,
-            tag: "Gastronomía",
+            tag: "GASTRONOMÍA",
             price: "💰 Económico"
         },
         {
@@ -621,11 +406,11 @@
             category: "Comida",
             location: "Calle El Arsenal",
             coords: [11.9302, -85.9553],
-            image: "https://ik.imagekit.io/mnw1ere56/el-zaguan-granada.jpg",
-            description: "Restaurante referente de la gastronomía granadina instalado en una casona colonial. Especialidad en carnes a la parrilla y platos típicos nicaragüenses en un jardín interior.",
+            image: "https://ik.imagekit.io/mnw1ere56/El%20Zaguan.jpg?updatedAt=1773508657890",
+            description: "Restaurante referente de la gastronomía granadina en casona colonial. Especialidad en carnes a la parrilla y platos típicos nicaragüenses en un jardín interior.",
             rating: 4.6,
             reviews: 198,
-            tag: "Gastronomía",
+            tag: "GASTRONOMÍA",
             price: "💰💰 Moderado"
         },
 
@@ -636,11 +421,11 @@
             category: "Hoteles",
             location: "Frente al Parque Central",
             coords: [11.9300, -85.9562],
-            image: "https://ik.imagekit.io/mnw1ere56/hotel-plaza-colon.jpg",
-            description: "Hotel boutique de lujo frente al Parque Central. Habitaciones coloniales con balcones, piscina y restaurante gourmet. La mejor ubicación de Granada con desayuno incluido.",
+            image: "https://ik.imagekit.io/mnw1ere56/Hotel-plaza-colon-granada.webp?updatedAt=1773508740090",
+            description: "Hotel boutique de lujo frente al Parque Central. Habitaciones coloniales con balcones, piscina y restaurante gourmet. La mejor ubicación de Granada.",
             rating: 4.8,
             reviews: 320,
-            tag: "Hotel",
+            tag: "HOTEL",
             price: "💰💰💰 Premium"
         },
         {
@@ -649,26 +434,26 @@
             category: "Hoteles",
             location: "Cerca de Iglesia La Merced",
             coords: [11.9318, -85.9580],
-            image: "https://ik.imagekit.io/mnw1ere56/hotel-real-la-merced.jpg",
-            description: "Encantadora posada histórica en casona colonial restaurada. Patio interior, desayuno incluido y personal atento. Excelente relación calidad-precio en el corazón de la ciudad.",
+            image: "https://ik.imagekit.io/mnw1ere56/Hotel-Real-la-Merced.jpg?updatedAt=1773508819951",
+            description: "Encantadora posada histórica en casona colonial restaurada. Patio interior, desayuno incluido y personal atento. Excelente relación calidad-precio.",
             rating: 4.5,
             reviews: 142,
-            tag: "Hotel",
+            tag: "HOTEL",
             price: "💰💰 Moderado"
         },
 
-        // ── Actividades / Tours ──────────────────────────────────────────────
+        // ── Actividades ──────────────────────────────────────────────────────
         {
             id: 16,
             name: "Tour Volcán Masaya",
             category: "Actividades",
             location: "A 30 km de Granada",
             coords: [11.9840, -86.1615],
-            image: "https://ik.imagekit.io/mnw1ere56/volcan-masaya.jpg",
-            description: "Visita al volcán activo más accesible del mundo. De noche puedes ver la lava desde el borde del cráter. Tours diurnos y nocturnos disponibles con salida desde Granada.",
+            image: "https://ik.imagekit.io/mnw1ere56/Volcan%20Masaya.jpg?updatedAt=1773509105512",
+            description: "Visita al volcán activo más accesible del mundo. De noche puedes ver la lava desde el borde del cráter. Tours diurnos y nocturnos con salida desde Granada.",
             rating: 4.9,
             reviews: 410,
-            tag: "Tour",
+            tag: "TOUR",
             price: "💰💰 Moderado"
         },
         {
@@ -677,108 +462,78 @@
             category: "Actividades",
             location: "Parque Central",
             coords: [11.9299, -85.9559],
-            image: "https://ik.imagekit.io/mnw1ere56/paseo-carruaje-granada.jpg",
-            description: "Recorrido por las calles coloniales en carruaje tirado por caballos. Ideal para conocer la historia de Granada mientras disfrutas de sus fachadas de colores. Salidas desde el Parque Central.",
+            image: "https://ik.imagekit.io/mnw1ere56/Paseo%20en%20Carruaje.jpg?updatedAt=1773509279951",
+            description: "Recorrido por las calles coloniales en carruaje tirado por caballos. Ideal para conocer la historia de Granada mientras disfrutas de sus fachadas de colores.",
             rating: 4.6,
             reviews: 88,
-            tag: "Tour",
+            tag: "TOUR",
             price: "💰 Económico"
         }
     ];
 
     // ── Estado ─────────────────────────────────────────────────────────────────
+    // MEJORA: try/catch en localStorage para modo privado
     let favorites = [];
-    try { favorites = JSON.parse(localStorage.getItem('favorites')) || []; } catch (e) { favorites = []; }
+    try { favorites = JSON.parse(localStorage.getItem('favorites')) || []; } catch (e) {}
 
     let currentFilter   = 'Todos';
     let currentPlaceId  = null;
     let searchQuery     = '';
-    let mapInitialized  = false;
     let map, userMarker;
     let markers = [];
-
-    // ── Helpers de persistencia ────────────────────────────────────────────────
-    function saveFavorites() {
-        try { localStorage.setItem('favorites', JSON.stringify(favorites)); } catch (e) { /* noop */ }
-    }
-
-    // ── Toast ──────────────────────────────────────────────────────────────────
-    let toastTimer;
-    function showToast(msg) {
-        const el = document.getElementById('toast');
-        el.textContent = msg;
-        el.classList.add('show');
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
-    }
-
-    // ── Escape para prevenir XSS ───────────────────────────────────────────────
-    function esc(str) {
-        const d = document.createElement('div');
-        d.textContent = str;
-        return d.innerHTML;
-    }
 
     // ── Renderizado de tarjetas ────────────────────────────────────────────────
     function renderPlaces() {
         const container = document.getElementById('places-container');
+        container.innerHTML = '';
 
         const filtered = PLACES.filter(p => {
             const matchesFilter = currentFilter === 'Todos' || p.category === currentFilter;
-            const q = searchQuery.toLowerCase();
-            const matchesSearch = p.name.toLowerCase().includes(q) || p.location.toLowerCase().includes(q);
+            const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                  p.location.toLowerCase().includes(searchQuery.toLowerCase());
             return matchesFilter && matchesSearch;
         });
 
         if (filtered.length === 0) {
             container.innerHTML = `
-                <div class="py-14 text-center">
-                    <p class="text-gray-400 text-sm">No se encontraron lugares.</p>
+                <div class="py-12 text-center">
+                    <p class="text-gray-500">No se encontraron lugares que coincidan con tu búsqueda.</p>
                 </div>`;
             return;
         }
 
-        // Acumular en string: un solo assignment al DOM
-        const html = filtered.map(place => {
+        filtered.forEach(place => {
             const isFav = favorites.includes(place.id);
-            return `
-            <div class="place-card">
-                <div class="relative h-44">
-                    <img src="${esc(place.image)}" alt="${esc(place.name)}"
-                        class="w-full h-full object-cover" loading="lazy">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-                    <button onclick="toggleFavorite(${place.id}, event)"
-                        id="fav-btn-${place.id}"
-                        class="absolute top-3 right-3 bg-white/90 p-2 rounded-full shadow-sm transition-transform">
-                        <i data-lucide="heart"
-                            class="w-4 h-4 ${isFav ? 'text-red-500 fill-current' : 'text-gray-400'}"></i>
-                    </button>
-                    <span class="absolute bottom-3 left-4 bg-white/90 text-[10px] font-bold text-[#7C4A1A] px-2.5 py-1 rounded-full uppercase tracking-wide">
-                        ${esc(place.tag)}
-                    </span>
-                </div>
-                <div class="p-4">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="text-base font-semibold text-[#1C0F00]">${esc(place.name)}</h3>
-                            <p class="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
-                                <i data-lucide="map-pin" class="w-3 h-3"></i> ${esc(place.location)}
-                            </p>
-                        </div>
-                        <div class="flex items-center gap-1 text-amber-500 text-xs font-semibold">
-                            <i data-lucide="star" class="w-3 h-3 fill-current"></i> ${esc(String(place.rating))}
-                        </div>
+            const priceHTML = place.price
+                ? '<p class="text-xs font-semibold text-amber-700 mt-2">' + place.price + '</p>'
+                : '';
+            const card = `
+                <div class="bg-white rounded-3xl overflow-hidden card-shadow">
+                    <div class="relative h-48">
+                        <img src="${place.image}" alt="${place.name}" class="w-full h-full object-cover">
+                        <button onclick="toggleFavorite(${place.id}, event)" class="absolute top-4 right-4 bg-white/90 p-2 rounded-full shadow-sm">
+                            <i data-lucide="heart" class="w-5 h-5 ${isFav ? 'text-red-500 fill-current' : 'text-gray-400'}"></i>
+                        </button>
                     </div>
-                    ${place.price ? '<p class="text-xs text-amber-700 font-medium mt-3">' + esc(place.price) + '</p>' : ''}
-                    <button onclick="openModal(${place.id})" class="btn-primary mt-2">
-                        Ver detalles <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            </div>`;
-        }).join('');
-
-        container.innerHTML = html;
-        lucide.createIcons({ nodes: [container] });
+                    <div class="p-5">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-900">${place.name}</h3>
+                                <p class="text-sm text-gray-500 flex items-center mt-1">
+                                    <i data-lucide="map-pin" class="w-3 h-3 mr-1"></i> ${place.location}
+                                </p>
+                            </div>
+                            <span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded">${place.tag}</span>
+                        </div>
+                        ${priceHTML}
+                        <button onclick="openModal(${place.id})" class="mt-4 w-full bg-orange-900 text-white py-3 rounded-xl font-semibold flex justify-center items-center gap-2">
+                            Ver detalles <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>`;
+            container.innerHTML += card;
+        });
+        lucide.createIcons();
     }
 
     function handleSearch(query) {
@@ -788,36 +543,34 @@
 
     function setFilter(category) {
         currentFilter = category;
-
-        document.querySelectorAll('.filter-pill').forEach(btn => btn.classList.remove('active'));
-        document.getElementById(`filter-${category}`).classList.add('active');
-
-        // Limpiar búsqueda al cambiar filtro
-        searchQuery = '';
+        searchQuery   = '';
         const input = document.getElementById('search-input');
         if (input) input.value = '';
 
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('catedral-yellow', 'font-semibold', 'shadow-sm');
+            btn.classList.add('bg-white', 'border', 'border-orange-200', 'text-gray-600');
+        });
+        const activeBtn = document.getElementById('filter-' + category);
+        if (activeBtn) {
+            activeBtn.classList.add('catedral-yellow', 'font-semibold', 'shadow-sm');
+            activeBtn.classList.remove('bg-white', 'border', 'border-orange-200', 'text-gray-600');
+        }
         renderPlaces();
     }
 
     // ── Favoritos ──────────────────────────────────────────────────────────────
     function toggleFavorite(id, event) {
         if (event) event.stopPropagation();
-
-        const idx = favorites.indexOf(id);
-        const wasAdded = idx === -1;
-        if (wasAdded) { favorites.push(id); } else { favorites.splice(idx, 1); }
-
-        saveFavorites();
-        showToast(wasAdded ? '❤️  Añadido a favoritos' : 'Eliminado de favoritos');
-
-        // Animar botón de la tarjeta
-        const btn = document.getElementById(`fav-btn-${id}`);
-        if (btn) {
-            btn.classList.add('heart-pop');
-            btn.addEventListener('animationend', () => btn.classList.remove('heart-pop'), { once: true });
+        // MEJORA: parseInt evita comparación estricta string vs número
+        id = parseInt(id, 10);
+        const index = favorites.indexOf(id);
+        if (index > -1) {
+            favorites.splice(index, 1);
+        } else {
+            favorites.push(id);
         }
-
+        try { localStorage.setItem('favorites', JSON.stringify(favorites)); } catch (e) {}
         renderPlaces();
 
         const profileSection = document.getElementById('section-profile');
@@ -828,194 +581,113 @@
     }
 
     function toggleFavoriteFromModal() {
-        if (currentPlaceId !== null) toggleFavorite(currentPlaceId);
+        if (currentPlaceId) toggleFavorite(currentPlaceId);
+    }
+
+    async function sharePlace() {
+        const place = PLACES.find(p => p.id === currentPlaceId);
+        if (!place) return;
+        const shareData = {
+            title: 'Granada Explora: ' + place.name,
+            text: place.description + '\n\nUbicación: ' + place.location,
+            url: window.location.href
+        };
+        try {
+            if (navigator.share) { await navigator.share(shareData); }
+            else { alert('La función de compartir no está disponible en este navegador.'); }
+        } catch (err) { console.error('Error al compartir:', err); }
     }
 
     function updateModalFavBtn() {
         const isFav = favorites.includes(currentPlaceId);
         const btn   = document.getElementById('modal-fav-btn');
         const text  = document.getElementById('modal-fav-text');
-        const icon  = btn.querySelector('i');
-
+        const icon  = btn.querySelector('svg') || btn.querySelector('i');
         if (isFav) {
-            btn.style.background  = '#FEF2F2';
-            btn.style.color       = '#DC2626';
-            text.textContent      = 'Guardado';
-            icon.classList.add('fill-current');
+            btn.classList.add('bg-red-50', 'text-red-600');
+            btn.classList.remove('bg-orange-50', 'text-orange-900');
+            text.innerText = 'Guardado';
+            if (icon) icon.classList.add('fill-current');
         } else {
-            btn.style.background  = '#FFF7ED';
-            btn.style.color       = '#7C4A1A';
-            text.textContent      = 'Guardar';
-            icon.classList.remove('fill-current');
+            btn.classList.remove('bg-red-50', 'text-red-600');
+            btn.classList.add('bg-orange-50', 'text-orange-900');
+            text.innerText = 'Guardar';
+            if (icon) icon.classList.remove('fill-current');
         }
     }
 
     // ── Modal ──────────────────────────────────────────────────────────────────
     function openModal(id) {
-        const place = PLACES.find(p => p.id === id);
+        // MEJORA: parseInt resuelve comparación estricta string vs número
+        const place = PLACES.find(p => p.id === parseInt(id, 10));
         if (!place) return;
-        currentPlaceId = id;
+        currentPlaceId = place.id;
 
-        document.getElementById('modal-img').src              = place.image;
-        document.getElementById('modal-img').alt              = place.name;
-        document.getElementById('modal-title').textContent    = place.name;
-        document.getElementById('modal-location-text').textContent = place.location;
-        document.getElementById('modal-tag').textContent      = place.tag;
-        document.getElementById('modal-rating').textContent   = place.rating;
-        document.getElementById('modal-reviews').textContent  = `(${place.reviews} reseñas)`;
-        document.getElementById('modal-desc').textContent     = place.description;
+        document.getElementById('modal-img').src                   = place.image;
+        document.getElementById('modal-title').innerText           = place.name;
+        document.getElementById('modal-location-text').innerText   = place.location;
+        document.getElementById('modal-tag').innerText             = place.tag;
+        document.getElementById('modal-rating').innerText          = place.rating;
+        document.getElementById('modal-reviews').innerText         = '(' + place.reviews + ' reseñas)';
+        document.getElementById('modal-desc').innerText            = place.description;
+
+        // Precio
         const priceEl = document.getElementById('modal-price');
-        priceEl.textContent = place.price || '';
-        priceEl.style.display = place.price ? 'block' : 'none';
+        priceEl.innerText      = place.price || '';
+        priceEl.style.display  = place.price ? 'block' : 'none';
 
         document.getElementById('modal-map-btn').onclick = () => {
             closeModal();
             showSection('map');
             map.setView(place.coords, 16);
             markers.forEach(m => {
-                const ll = m.getLatLng();
-                if (ll.lat === place.coords[0] && ll.lng === place.coords[1]) m.openPopup();
+                if (m.getLatLng().lat === place.coords[0] && m.getLatLng().lng === place.coords[1]) {
+                    m.openPopup();
+                }
             });
         };
 
+        document.getElementById('modal-directions-btn').href =
+            'https://www.google.com/maps/dir/?api=1&destination=' + place.coords[0] + ',' + place.coords[1];
+
         updateModalFavBtn();
-        lucide.createIcons({ nodes: [document.getElementById('modal-inner')] });
 
         const modal = document.getElementById('modal-details');
-        modal.classList.add('open');
+        modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
+        lucide.createIcons();
     }
 
     function closeModal() {
-        document.getElementById('modal-details').classList.remove('open');
-        document.body.style.overflow = '';
+        document.getElementById('modal-details').style.display = 'none';
+        document.body.style.overflow = 'auto';
         currentPlaceId = null;
     }
 
-    // Cerrar al hacer clic en el backdrop
-    document.getElementById('modal-details').addEventListener('click', function (e) {
+    // Cerrar modal al hacer clic en el fondo
+    document.getElementById('modal-details').addEventListener('click', function(e) {
         if (e.target === this) closeModal();
     });
 
-    // Cerrar con Escape
+    // Cerrar con tecla Escape
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-    // ── Rutas ──────────────────────────────────────────────────────────────────
-    function renderRoutes() {
-        const container = document.getElementById('routes-container');
-
-        const html = ROUTES.map(route => {
-            const routePlaces = PLACES.filter(p => route.places.includes(p.id));
-            const stops = routePlaces.map((p, idx) => `
-                <div class="flex items-center gap-3">
-                    <div class="w-5 h-5 rounded-full bg-[#C2410C] text-white text-[10px] flex items-center justify-center shrink-0">${idx + 1}</div>
-                    <span class="text-sm text-gray-700">${esc(p.name)}</span>
-                </div>`).join('');
-
-            return `
-            <div class="route-card">
-                <div class="flex items-start gap-4 mb-4">
-                    <div class="p-3 rounded-2xl shrink-0" style="background:${route.color}; color:${route.textColor}">
-                        <i data-lucide="${route.icon}" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-semibold text-[#1C0F00]">${esc(route.name)}</h3>
-                        <p class="text-xs text-gray-400 mt-0.5">${esc(route.duration)} · ${route.places.length} parada${route.places.length !== 1 ? 's' : ''}</p>
-                    </div>
-                </div>
-                <p class="text-sm text-gray-500 mb-4">${esc(route.description)}</p>
-                <div class="space-y-2.5 mb-5">${stops}</div>
-                <button onclick="startRoute(${route.id})" class="btn-primary">
-                    <i data-lucide="map" class="w-4 h-4"></i> Ver en el mapa
-                </button>
-            </div>`;
-        }).join('');
-
-        container.innerHTML = html;
-        lucide.createIcons({ nodes: [container] });
-    }
-
-    function startRoute(routeId) {
-        const route      = ROUTES.find(r => r.id === routeId);
-        const firstPlace = PLACES.find(p => p.id === route.places[0]);
-
-        showSection('map');
-        if (firstPlace) {
-            map.setView(firstPlace.coords, 15);
-            // Resaltar los marcadores de la ruta
-            markers.forEach(m => {
-                const isRouteStop = route.places.some(pid => {
-                    const pl = PLACES.find(p => p.id === pid);
-                    return pl && m.getLatLng().lat === pl.coords[0] && m.getLatLng().lng === pl.coords[1];
-                });
-                m.setOpacity(isRouteStop ? 1 : 0.3);
-            });
-        }
-    }
-
-    // ── Favoritos (perfil) ─────────────────────────────────────────────────────
-    function renderFavorites() {
-        const container  = document.getElementById('favorites-container');
-        const emptyState = document.getElementById('empty-favorites');
-        const favPlaces  = PLACES.filter(p => favorites.includes(p.id));
-
-        if (favPlaces.length === 0) {
-            container.innerHTML    = '';
-            emptyState.style.display = 'block';
-            lucide.createIcons({ nodes: [emptyState] });
-            return;
-        }
-
-        emptyState.style.display = 'none';
-
-        const html = favPlaces.map(place => `
-            <div class="flex bg-white rounded-2xl overflow-hidden shadow-sm border border-orange-50 p-3 gap-3">
-                <img src="${esc(place.image)}" alt="${esc(place.name)}"
-                    class="w-20 h-20 object-cover rounded-xl shrink-0" loading="lazy">
-                <div class="flex-1 flex flex-col justify-center min-w-0">
-                    <h3 class="font-semibold text-[#1C0F00] text-sm truncate">${esc(place.name)}</h3>
-                    <p class="text-xs text-gray-400 mt-0.5">${esc(place.location)}</p>
-                    <div class="flex justify-between items-center mt-2">
-                        <button onclick="openModal(${place.id})"
-                            class="text-xs font-semibold text-[#C2410C]">Ver detalles</button>
-                        <button onclick="toggleFavorite(${place.id}, event)"
-                            class="text-gray-300 hover:text-red-400 transition-colors">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>`).join('');
-
-        container.innerHTML = html;
-        lucide.createIcons({ nodes: [container] });
-    }
-
     // ── Navegación ─────────────────────────────────────────────────────────────
-    const SECTIONS = ['home', 'map', 'routes', 'profile'];
-
     function showSection(section) {
-        SECTIONS.forEach(s => {
-            document.getElementById(`section-${s}`)?.classList.add('hidden');
-            const btn = document.getElementById(`btn-${s}`);
+        ['home', 'map', 'profile', 'routes'].forEach(s => {
+            const el  = document.getElementById('section-' + s);
+            const btn = document.getElementById('btn-' + s);
+            if (el)  el.classList.add('hidden');
             if (btn) { btn.classList.remove('active-nav'); btn.classList.add('text-gray-400'); }
         });
 
-        const el  = document.getElementById(`section-${section}`);
-        const btn = document.getElementById(`btn-${section}`);
-
-        if (el)  { el.classList.remove('hidden'); el.classList.add('section-enter'); }
-        if (btn) { btn.classList.add('active-nav'); btn.classList.remove('text-gray-400'); }
+        const currentSection = document.getElementById('section-' + section);
+        const currentBtn     = document.getElementById('btn-' + section);
+        if (currentSection) currentSection.classList.remove('hidden');
+        if (currentBtn)     { currentBtn.classList.add('active-nav'); currentBtn.classList.remove('text-gray-400'); }
 
         if (section === 'map') {
-            // Inicialización lazy del mapa
-            if (!mapInitialized) {
-                initMap();
-                mapInitialized = true;
-            }
-            setTimeout(() => map.invalidateSize(), 200);
-            // Restaurar opacidad de marcadores al volver al mapa sin ruta activa
-            markers.forEach(m => m.setOpacity(1));
-
+            setTimeout(() => { map.invalidateSize(); }, 200);
         } else if (section === 'profile') {
             renderFavorites();
         } else if (section === 'routes') {
@@ -1023,113 +695,168 @@
         }
     }
 
+    // ── Rutas ──────────────────────────────────────────────────────────────────
+    function renderRoutes() {
+        const container = document.getElementById('routes-container');
+        container.innerHTML = '';
+        ROUTES.forEach(route => {
+            const routePlaces = PLACES.filter(p => route.places.includes(p.id));
+            const card = `
+                <div class="bg-white rounded-3xl p-6 card-shadow border border-orange-50">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="${route.color} p-3 rounded-2xl">
+                            <i data-lucide="${route.icon}"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900">${route.name}</h3>
+                            <p class="text-xs text-gray-500">${route.duration} • ${route.places.length} paradas</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">${route.description}</p>
+                    <div class="space-y-3">
+                        ${routePlaces.map((p, idx) => `
+                            <div class="flex items-center gap-3">
+                                <div class="w-6 h-6 rounded-full bg-orange-900 text-white text-[10px] flex items-center justify-center">${idx + 1}</div>
+                                <span class="text-sm font-medium text-gray-700">${p.name}</span>
+                            </div>`).join('')}
+                    </div>
+                    <button onclick="startRoute(${route.id})" class="mt-6 w-full py-3 bg-gray-50 text-gray-900 rounded-xl text-sm font-bold border border-gray-100">
+                        Ver en el mapa
+                    </button>
+                </div>`;
+            container.innerHTML += card;
+        });
+        lucide.createIcons();
+    }
+
+    function startRoute(routeId) {
+        const route      = ROUTES.find(r => r.id === routeId);
+        const firstPlace = PLACES.find(p => p.id === route.places[0]);
+        showSection('map');
+        if (firstPlace) map.setView(firstPlace.coords, 15);
+    }
+
+    // ── Favoritos (perfil) ─────────────────────────────────────────────────────
+    function renderFavorites() {
+        const container  = document.getElementById('favorites-container');
+        const emptyState = document.getElementById('empty-favorites');
+        container.innerHTML = '';
+
+        const favPlaces = PLACES.filter(p => favorites.includes(p.id));
+
+        if (favPlaces.length === 0) {
+            emptyState.style.display = 'flex';
+            lucide.createIcons({ nodes: [emptyState] });
+            return;
+        }
+
+        emptyState.style.display = 'none';
+        favPlaces.forEach(place => {
+            const card = `
+                <div class="flex bg-white rounded-2xl overflow-hidden card-shadow p-3 gap-4">
+                    <img src="${place.image}" alt="${place.name}" class="w-24 h-24 object-cover rounded-xl">
+                    <div class="flex-1 flex flex-col justify-center">
+                        <h3 class="font-bold text-gray-900">${place.name}</h3>
+                        <p class="text-xs text-gray-500 mt-1">${place.location}</p>
+                        <div class="flex justify-between items-center mt-2">
+                            <button onclick="openModal(${place.id})" class="text-xs font-bold text-orange-900">Ver detalles</button>
+                            <button onclick="toggleFavorite(${place.id}, event)" class="text-red-500">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+            container.innerHTML += card;
+        });
+        lucide.createIcons();
+    }
+
     // ── Mapa (Leaflet) ─────────────────────────────────────────────────────────
     function initMap() {
-        map = L.map('map', { zoomControl: false, minZoom: 2 }).setView([11.9300, -85.9530], 14);
+        map = L.map('map', {
+            zoomControl:  false,
+            // MEJORA: minZoom: 2 permite alejar el mapa hasta ver países y continentes
+            minZoom:      2
+        }).setView([11.9300, -85.9530], 14);
 
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '© OpenStreetMap contributors © CARTO',
-            maxZoom: 19
+            attribution: '&copy; OpenStreetMap'
         }).addTo(map);
 
         PLACES.forEach(place => {
-            const color = place.category === 'Cultura'    ? '#A52A2A' :
-                          place.category === 'Naturaleza' ? '#059669' :
-                          place.category === 'Comida'     ? '#D97706' :
-                          place.category === 'Hoteles'    ? '#7C3AED' :
-                          place.category === 'Actividades'? '#0369A1' : '#6B7280';
+            // MEJORA: colores para las nuevas categorías Hoteles y Actividades
+            const color = place.category === 'Cultura'     ? '#A52A2A' :
+                          place.category === 'Naturaleza'  ? '#059669' :
+                          place.category === 'Comida'      ? '#D97706' :
+                          place.category === 'Hoteles'     ? '#7C3AED' :
+                          place.category === 'Actividades' ? '#0369A1' : '#6B7280';
 
-            const icon = L.divIcon({
+            const customIcon = L.divIcon({
                 className: 'custom-marker',
-                html: `<div style="
-                    background:${color};
-                    width:16px; height:16px;
-                    border-radius:50%;
-                    border:3px solid white;
-                    box-shadow:0 2px 6px rgba(0,0,0,.35);
-                "></div>`,
-                iconSize: [16, 16],
-                iconAnchor: [8, 8]
+                html: '<div style="background-color:' + color + '; width:18px; height:18px; border-radius:50%; border:3px solid white; box-shadow:0 2px 4px rgba(0,0,0,0.3);"></div>',
+                iconSize:   [18, 18],
+                iconAnchor: [9, 9]
             });
 
-            const marker = L.marker(place.coords, { icon })
+            const marker = L.marker(place.coords, { icon: customIcon })
                 .addTo(map)
-                .bindPopup(`
-                    <div style="font-family:'DM Sans',sans-serif; padding:4px 2px;">
-                        <b style="color:#C2410C; font-size:13px;">${place.name}</b>
-                        <br>
-                        <span style="color:#9CA3AF; font-size:11px;">${place.category}</span>
-                    </div>`);
-
+                .bindPopup('<div class="p-1"><b class="text-orange-900">' + place.name + '</b><br><span class="text-gray-500 text-xs">' + place.category + '</span></div>');
             markers.push(marker);
         });
     }
 
     function getLocation() {
-        if (!navigator.geolocation) { showToast('Geolocalización no disponible'); return; }
-
-        navigator.geolocation.getCurrentPosition(
-            pos => {
-                const { latitude: lat, longitude: lng } = pos.coords;
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
                 if (userMarker) map.removeLayer(userMarker);
                 userMarker = L.circleMarker([lat, lng], {
-                    radius: 9, fillColor: '#3B82F6', color: '#fff', weight: 2, fillOpacity: 1
+                    radius: 10, fillColor: '#3b82f6', color: '#fff', weight: 2, fillOpacity: 1
                 }).addTo(map).bindPopup('Estás aquí').openPopup();
                 map.setView([lat, lng], 16);
-            },
-            () => showToast('No se pudo obtener tu ubicación')
-        );
+            });
+        }
     }
 
     // ── Indicador de conexión ─────────────────────────────────────────────────
-    const banner = document.getElementById('offline-banner');
-    const bannerMsg = document.getElementById('offline-msg');
-    let onlineTimer;
+    // MEJORA: debounce de 300ms para ignorar el evento 'online' espurio
+    // que Android dispara justo antes del 'offline'
+    let offlineDebounce, offlineHideTimer;
 
-    let onlineDebounce;
-
-    function showOfflineBanner() {
-        // Cancelar cualquier timer pendiente de "conexión restaurada"
-        clearTimeout(onlineTimer);
-        clearTimeout(onlineDebounce);
-
-        banner.classList.remove('back-online');
-        banner.querySelector('.dot').style.animation = 'blink 1.4s ease infinite';
-        bannerMsg.textContent = 'Sin conexión — Mostrando contenido guardado';
-        banner.classList.add('visible');
-        document.body.classList.add('offline-mode');
+    function updateOnlineStatus() {
+        const indicator = document.getElementById('offline-indicator');
+        if (navigator.onLine) {
+            // Esperar 300ms para confirmar que realmente hay red
+            clearTimeout(offlineDebounce);
+            offlineDebounce = setTimeout(() => {
+                if (!navigator.onLine) return;
+                indicator.classList.remove('animate-pulse', 'bg-red-600');
+                indicator.classList.add('bg-green-600');
+                indicator.textContent = '✓ CONEXIÓN RESTAURADA';
+                clearTimeout(offlineHideTimer);
+                offlineHideTimer = setTimeout(() => indicator.classList.add('hidden'), 2800);
+            }, 300);
+        } else {
+            clearTimeout(offlineDebounce);
+            clearTimeout(offlineHideTimer);
+            indicator.classList.remove('hidden', 'bg-green-600');
+            indicator.classList.add('bg-red-600', 'animate-pulse');
+            indicator.textContent = 'MODO SIN CONEXIÓN - ALGUNAS FUNCIONES PUEDEN NO ESTAR DISPONIBLES';
+        }
     }
 
-    function showOnlineBanner() {
-        // Debounce: esperar 300ms antes de mostrar "conexión restaurada"
-        // Evita el evento 'online' espurio que Android dispara al desactivar la red
-        clearTimeout(onlineDebounce);
-        onlineDebounce = setTimeout(() => {
-            if (!navigator.onLine) return; // confirmar que sigue online
-            banner.classList.add('back-online');
-            banner.querySelector('.dot').style.animation = 'none';
-            bannerMsg.textContent = '¡Conexión restaurada!';
-            banner.classList.add('visible');
-            document.body.classList.remove('offline-mode');
-            clearTimeout(onlineTimer);
-            onlineTimer = setTimeout(() => banner.classList.remove('visible'), 2800);
-        }, 300);
-    }
-
-    window.addEventListener('offline', showOfflineBanner);
-    window.addEventListener('online',  showOnlineBanner);
-
-    // Verificar estado inicial
-    if (!navigator.onLine) showOfflineBanner();
+    window.addEventListener('online',  updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
 
     // ── Inicio ─────────────────────────────────────────────────────────────────
     window.onload = () => {
         renderPlaces();
+        initMap();
+        updateOnlineStatus();
 
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('[App] SW registrado:', reg.scope))
-                .catch(err => console.warn('[App] SW error:', err));
+            navigator.serviceWorker.register('sw.js');
         }
     };
     </script>
