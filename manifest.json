@@ -2,8 +2,8 @@
   "name": "Granada Explora",
   "short_name": "Granada",
   "description": "Guía turística interactiva de Granada, Nicaragua",
- "start_url": "/Granada-Explora/index.html",
-  "scope": "/Granada-Explora/",
+  "start_url": "index.html",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#FDF3E3",
@@ -65,14 +65,14 @@
       "name": "Ver Mapa",
       "short_name": "Mapa",
       "description": "Abre directamente el mapa turístico",
-      "url": "/index.html#map",
+      "url": "index.html#map",
       "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
     },
     {
       "name": "Mis Favoritos",
       "short_name": "Favoritos",
       "description": "Ver lugares guardados",
-      "url": "/index.html#profile",
+      "url": "index.html#profile",
       "icons": [{ "src": "icons/icon-96.png", "sizes": "96x96" }]
     }
   ]
